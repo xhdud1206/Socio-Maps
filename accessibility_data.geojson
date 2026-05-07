@@ -1,0 +1,1696 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020281,
+          37.584414
+        ]
+      },
+      "properties": {
+        "id": 1,
+        "zone": "a",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 적재 물건"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "좁은 보도",
+          "보도 끊김",
+          "장애물: 적재 물건",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.019942,
+          37.58435
+        ]
+      },
+      "properties": {
+        "id": 2,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "턱 있음 (보통)",
+          "횡단보도 내리막이 반만 있음."
+        ],
+        "note": "횡단보도 내리막이 반만 있음."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020658,
+          37.584207
+        ]
+      },
+      "properties": {
+        "id": 3,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "주차장 입출구"
+        ],
+        "note": "주차장 입출구"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020635,
+          37.584056
+        ]
+      },
+      "properties": {
+        "id": 4,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 적재 물건"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "좁은 보도",
+          "장애물: 적재 물건"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020226,
+          37.58397
+        ]
+      },
+      "properties": {
+        "id": 5,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "장애물: 주정차",
+          "어린이집 앞 주차장(농협)"
+        ],
+        "note": "어린이집 앞 주차장(농협)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021243,
+          37.583923
+        ]
+      },
+      "properties": {
+        "id": 6,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "턱 있음 (보통)",
+          "가게 앞 휠체어 진입불가 - 경사로X"
+        ],
+        "note": "가게 앞 휠체어 진입불가 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021458,
+          37.583804
+        ]
+      },
+      "properties": {
+        "id": 7,
+        "zone": "a",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "curb",
+            "level": "low",
+            "label": "낮은 턱"
+          },
+          {
+            "type": "slope",
+            "level": "steep",
+            "label": "가파른 경사"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "좁은 보도",
+          "낮은 턱",
+          "가파른 경사"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021355,
+          37.583768
+        ]
+      },
+      "properties": {
+        "id": 8,
+        "zone": "a",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "curb",
+            "level": "low",
+            "label": "낮은 턱"
+          },
+          {
+            "type": "slope",
+            "level": "steep",
+            "label": "가파른 경사"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "좁은 보도",
+          "낮은 턱",
+          "가파른 경사"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0213526,
+          37.5836285
+        ]
+      },
+      "properties": {
+        "id": 9,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.02077,
+          37.583746
+        ]
+      },
+      "properties": {
+        "id": 10,
+        "zone": "a",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "low",
+            "label": "낮은 턱"
+          },
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "낮은 턱",
+          "보도 끊김",
+          "주차장 입출구"
+        ],
+        "note": "주차장 입출구"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021156,
+          37.583617
+        ]
+      },
+      "properties": {
+        "id": 11,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 적재 물건"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "장애물: 적재 물건"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020932,
+          37.583573
+        ]
+      },
+      "properties": {
+        "id": 12,
+        "zone": "a, b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "신호 없는 사거리 - 통행량 多"
+        ],
+        "note": "신호 없는 사거리 - 통행량 多"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021419,
+          37.583568
+        ]
+      },
+      "properties": {
+        "id": 13,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "좁은 보도",
+          "장애물: 주정차"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020915,
+          37.583528
+        ]
+      },
+      "properties": {
+        "id": 14,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 전봇대"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "좁은 보도",
+          "장애물: 전봇대"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020772,
+          37.583477
+        ]
+      },
+      "properties": {
+        "id": 15,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020616,
+          37.583333
+        ]
+      },
+      "properties": {
+        "id": 16,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020622,
+          37.583275
+        ]
+      },
+      "properties": {
+        "id": 17,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.02116,
+          37.583157
+        ]
+      },
+      "properties": {
+        "id": 18,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.020766,
+          37.583008
+        ]
+      },
+      "properties": {
+        "id": 19,
+        "zone": "b",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [
+          "성북요양병원"
+        ],
+        "note": "성북요양병원"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021149,
+          37.583004
+        ]
+      },
+      "properties": {
+        "id": 20,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "주차장 입출구"
+        ],
+        "note": "주차장 입출구"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021635,
+          37.582945
+        ]
+      },
+      "properties": {
+        "id": 21,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021116,
+          37.582723
+        ]
+      },
+      "properties": {
+        "id": 22,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021061,
+          37.582344
+        ]
+      },
+      "properties": {
+        "id": 23,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "주차장 입출구"
+        ],
+        "note": "주차장 입출구"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021177,
+          37.582153
+        ]
+      },
+      "properties": {
+        "id": 24,
+        "zone": "b",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021523,
+          37.581939
+        ]
+      },
+      "properties": {
+        "id": 25,
+        "zone": "b, c",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0218831,
+          37.5819835
+        ]
+      },
+      "properties": {
+        "id": 26,
+        "zone": "c",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "턱 있음 (보통)",
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022013,
+          37.581571
+        ]
+      },
+      "properties": {
+        "id": 27,
+        "zone": "c",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          },
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "완만한 경사",
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022138,
+          37.581336
+        ]
+      },
+      "properties": {
+        "id": 28,
+        "zone": "c",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "low",
+            "label": "낮은 턱"
+          },
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 적재물건"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "낮은 턱",
+          "완만한 경사",
+          "장애물: 적재물건",
+          "안전콘으로 진로 방해"
+        ],
+        "note": "안전콘으로 진로 방해"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.021962,
+          37.581104
+        ]
+      },
+      "properties": {
+        "id": 29,
+        "zone": "c",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          },
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "완만한 경사",
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022999,
+          37.580539
+        ]
+      },
+      "properties": {
+        "id": 30,
+        "zone": "c, d",
+        "severity": "red",
+        "icons": [
+          {
+            "type": "width",
+            "level": "very_narrow",
+            "label": "매우 좁은 보도"
+          },
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          },
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          }
+        ],
+        "icon_count": 3,
+        "details": [
+          "매우 좁은 보도",
+          "턱 있음 (보통)",
+          "완만한 경사",
+          "인도폭 좁고, 턱이 있음 (휠체어 이동 여부 확인 필요)"
+        ],
+        "note": "인도폭 좁고, 턱이 있음 (휠체어 이동 여부 확인 필요)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023079,
+          37.580498
+        ]
+      },
+      "properties": {
+        "id": 31,
+        "zone": "c, d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [
+          "노면 주차장"
+        ],
+        "note": "노면 주차장"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022606,
+          37.580476
+        ]
+      },
+      "properties": {
+        "id": 32,
+        "zone": "c, d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 컨테이너"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "장애물: 컨테이너",
+          "아직도 컨테이너 있는지 확인해보기"
+        ],
+        "note": "아직도 컨테이너 있는지 확인해보기"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023214,
+          37.580459
+        ]
+      },
+      "properties": {
+        "id": 33,
+        "zone": "d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [
+          "위치가 하천을 가리킴..."
+        ],
+        "note": "위치가 하천을 가리킴..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022977,
+          37.58042
+        ]
+      },
+      "properties": {
+        "id": 34,
+        "zone": "d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [
+          "노면 주차장"
+        ],
+        "note": "노면 주차장"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022401,
+          37.580394
+        ]
+      },
+      "properties": {
+        "id": 35,
+        "zone": "c, d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 컨테이너"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "좁은 보도",
+          "장애물: 컨테이너",
+          "컨테이너 확인"
+        ],
+        "note": "컨테이너 확인"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0227,
+          37.58036
+        ]
+      },
+      "properties": {
+        "id": 36,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "보도 끊김",
+          "인도와 차도 구분X, 도로폭도 좁음"
+        ],
+        "note": "인도와 차도 구분X, 도로폭도 좁음"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0223,
+          37.58023
+        ]
+      },
+      "properties": {
+        "id": 37,
+        "zone": "d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022847,
+          37.580033
+        ]
+      },
+      "properties": {
+        "id": 38,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022763,
+          37.579975
+        ]
+      },
+      "properties": {
+        "id": 39,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0228,
+          37.57997
+        ]
+      },
+      "properties": {
+        "id": 40,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "discontinuity",
+            "level": "broken",
+            "label": "보도 끊김"
+          },
+          {
+            "type": "obstacle",
+            "level": "present",
+            "label": "장애물: 주정차"
+          }
+        ],
+        "icon_count": 2,
+        "details": [
+          "보도 끊김",
+          "장애물: 주정차",
+          "인도와 차도 구분X"
+        ],
+        "note": "인도와 차도 구분X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0225,
+          37.5799
+        ]
+      },
+      "properties": {
+        "id": 41,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "계단 있음",
+          "상가 입출구 - 경사로X"
+        ],
+        "note": "상가 입출구 - 경사로X"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023373,
+          37.579771
+        ]
+      },
+      "properties": {
+        "id": 42,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "차단봉 때문에 인도폭 좁음(휠체어 이동 여부 조사 필요)"
+        ],
+        "note": "차단봉 때문에 인도폭 좁음(휠체어 이동 여부 조사 필요)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022909,
+          37.579761
+        ]
+      },
+      "properties": {
+        "id": 43,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "curb",
+            "level": "medium",
+            "label": "턱 있음 (보통)"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "턱 있음 (보통)",
+          "장애인 전용 주차장인데 턱 있음"
+        ],
+        "note": "장애인 전용 주차장인데 턱 있음"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023222,
+          37.57973
+        ]
+      },
+      "properties": {
+        "id": 44,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "stairs",
+            "level": "present",
+            "label": "계단 있음"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "계단 있음"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.022682,
+          37.579691
+        ]
+      },
+      "properties": {
+        "id": 45,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "steep",
+            "label": "가파른 경사"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "가파른 경사"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0228,
+          37.57965
+        ]
+      },
+      "properties": {
+        "id": 46,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "완만한 경사"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.02304,
+          37.579594
+        ]
+      },
+      "properties": {
+        "id": 47,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "주차구역이 너무 많은 골목 라인 표기"
+        ],
+        "note": "주차구역이 너무 많은 골목 라인 표기"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023191,
+          37.579559
+        ]
+      },
+      "properties": {
+        "id": 48,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "완만한 경사"
+        ],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023383,
+          37.579515
+        ]
+      },
+      "properties": {
+        "id": 49,
+        "zone": "d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [],
+        "note": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023113,
+          37.579392
+        ]
+      },
+      "properties": {
+        "id": 50,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "예건 굿노트상 14번, 54와 마찬가지"
+        ],
+        "note": "예건 굿노트상 14번, 54와 마찬가지"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0228,
+          37.57929
+        ]
+      },
+      "properties": {
+        "id": 51,
+        "zone": "d",
+        "severity": "green",
+        "icons": [],
+        "icon_count": 0,
+        "details": [
+          "예건 굿노트8, 휠체어시설있는 약국(굿)"
+        ],
+        "note": "예건 굿노트8, 휠체어시설있는 약국(굿)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.02322,
+          37.579246
+        ]
+      },
+      "properties": {
+        "id": 52,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "54,57과 동일"
+        ],
+        "note": "54,57과 동일"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.023342,
+          37.57901
+        ]
+      },
+      "properties": {
+        "id": 53,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "예건 굿노트 상 13번,  주차장 출입구"
+        ],
+        "note": "예건 굿노트 상 13번,  주차장 출입구"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0234,
+          37.57894
+        ]
+      },
+      "properties": {
+        "id": 54,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "width",
+            "level": "narrow",
+            "label": "좁은 보도"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "좁은 보도",
+          "주차혼잡가능구역"
+        ],
+        "note": "주차혼잡가능구역"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0231,
+          37.57885
+        ]
+      },
+      "properties": {
+        "id": 55,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "완만한 경사",
+          "예건굿노트9번, 은행후문 휠체어시설o"
+        ],
+        "note": "예건굿노트9번, 은행후문 휠체어시설o"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.02326,
+          37.578741
+        ]
+      },
+      "properties": {
+        "id": 56,
+        "zone": "d",
+        "severity": "yellow",
+        "icons": [
+          {
+            "type": "slope",
+            "level": "gentle",
+            "label": "완만한 경사"
+          }
+        ],
+        "icon_count": 1,
+        "details": [
+          "완만한 경사",
+          "예건굿노트10번, 은행앞문 (휠체어시설o, 그러나 주차장과 혼재 우려)"
+        ],
+        "note": "예건굿노트10번, 은행앞문 (휠체어시설o, 그러나 주차장과 혼재 우려)"
+      }
+    }
+  ]
+}

@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)file:///Users/sy/Downloads/index_2.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>길잡이 — 장애인 보행환경 접근성 지도</title>
+
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="./index_files/leaflet.css">
+<script src="./index_files/leaflet.js"></script>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ============================================================
+  // 🔧 여기에 Firebase 설정값을 붙여넣으세요!
+  // Firebase 콘솔(console.firebase.google.com) → 프로젝트 설정 → 웹 앱 추가
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdV_tnuXTh37MhTK8cgOVOCfyc5OxifcA",
+    authDomain: "socio-maps.firebaseapp.com",
+    projectId: "socio-maps",
+    storageBucket: "socio-maps.firebasestorage.app",
+    messagingSenderId: "125040200660",
+    appId: "1:125040200660:web:6314d92a2e70a86f69e441",
+    measurementId: "G-2T86WGSFNX"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // 전역으로 노출
+  window._auth = auth;
+  window._db = db;
+  window._fbFns = {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    collection,
+    addDoc,
+    getDocs,
+    serverTimestamp
+  };
+
+  // 로그인 상태 감지
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('auth-modal').style.display = 'none';
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-bar').style.display = 'flex';
+      document.getElementById('feedback-btn').style.display = 'flex';
+    } else {
+      document.getElementById('user-bar').style.display = 'none';
+      document.getElementById('feedback-btn').style.display = 'none';
+    }
+  });
+</script>
+
+<style>
+  /* ---- 기본 리셋 ---- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --text: #e8eaf0;
+    --text-muted: #8b90a8;
+    --accent: #4fd1c5;
+    --accent2: #667eea;
+    --red: #fc8181;
+    --yellow: #f6c90e;
+    --green: #68d391;
+    --radius: 14px;
+    --font-size: 15px;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: var(--font-size);
+  }
+
+  /* ---- 헤더 ---- */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 1000;
+  }
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--text-muted); font-weight: 400; font-size: 13px; margin-left: 8px; }
+
+  #user-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  #user-bar button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+  }
+  #user-bar button:hover { background: var(--border); }
+
+  #login-trigger {
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: opacity 0.2s;
+  }
+  #login-trigger:hover { opacity: 0.85; }
+
+  /* ---- 지도 영역 ---- */
+  #map-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- 범례 ---- */
+  #legend {
+    position: absolute;
+    bottom: 30px;
+    left: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    z-index: 900;
+    font-size: 13px;
+  }
+  #legend h4 { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-green { background: var(--green); }
+
+  /* ---- 의견 수렴 버튼 ---- */
+  #feedback-btn {
+    display: none;
+    position: absolute;
+    bottom: 30px;
+    right: 16px;
+    background: var(--accent2);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 13px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 900;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  #feedback-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(102,126,234,0.5); }
+  #feedback-btn.active { background: var(--red); box-shadow: 0 4px 20px rgba(252,129,129,0.4); }
+
+  /* ---- 상세 패널 ---- */
+  #detail-panel {
+    position: absolute;
+    top: 0;
+    right: -400px;
+    width: 360px;
+    height: 100%;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 800;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+  }
+  #detail-panel.open { right: 0; }
+
+  .panel-header {
+    padding: 20px 20px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    flex-shrink: 0;
+  }
+  .panel-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .panel-zone {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .panel-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .severity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .severity-red { background: rgba(252,129,129,0.15); color: var(--red); border: 1px solid rgba(252,129,129,0.3); }
+  .severity-yellow { background: rgba(246,201,14,0.15); color: var(--yellow); border: 1px solid rgba(246,201,14,0.3); }
+  .severity-green { background: rgba(104,211,145,0.15); color: var(--green); border: 1px solid rgba(104,211,145,0.3); }
+
+  /* 글자 크기 조절 */
+  .font-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .font-controls span { font-size: 11px; color: var(--text-muted); margin-right: 4px; }
+  .font-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .font-btn:hover { background: var(--border); }
+  .tts-btn {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s;
+  }
+  .tts-btn:hover { background: var(--border); }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .panel-body::-webkit-scrollbar { width: 5px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .icon-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .icon-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .icon-emoji { font-size: 22px; }
+  .icon-text { font-size: 14px; }
+  .icon-sublabel { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .note-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .no-issues {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--green);
+    font-size: 15px;
+  }
+  .no-issues .big { font-size: 40px; margin-bottom: 10px; }
+
+  #close-panel {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+  #close-panel:hover { color: var(--text); }
+
+  /* ---- 의견 수렴 모달 ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    width: 460px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* 인증 모달 */
+  #auth-modal .modal-box { width: 400px; }
+  .auth-tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .auth-tab {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.2s;
+  }
+  .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: var(--font-size);
+    font-family: inherit;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .form-group textarea { min-height: 90px; }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+  .submit-btn:hover { opacity: 0.85; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .success-msg {
+    color: var(--green);
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .modal-close-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  /* 위치 선택 안내 */
+  .location-hint {
+    background: rgba(79,209,197,0.1);
+    border: 1px solid rgba(79,209,197,0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* 지도 클릭 커서 */
+  #map.picking { cursor: crosshair !important; }
+
+  /* 커스텀 마커 스타일 */
+  .custom-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2.5px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+
+  /* Leaflet 팝업 오버라이드 */
+  .leaflet-popup-content-wrapper {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  }
+  .leaflet-popup-tip { background: var(--surface) !important; }
+
+  /* 의견 마커 */
+  .feedback-marker-icon {
+    background: var(--accent2);
+    border-radius: 50%;
+    border: 2px solid white;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  /* 반응형 */
+  @media (max-width: 600px) {
+    #detail-panel { width: 100%; right: -100%; }
+    .modal-box { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header>
+  <div class="logo">
+    길잡이<span>장애인 보행환경 접근성 지도</span>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div id="user-bar" style="display: none;">
+      <span id="user-email"></span>
+      <button onclick="handleLogout()">로그아웃</button>
+    </div>
+    <button id="login-trigger" onclick="document.getElementById(&#39;auth-modal&#39;).style.display=&#39;flex&#39;">로그인 / 회원가입</button>
+  </div>
+</header>
+
+<!-- 지도 -->
+<div id="map-container">
+  <div id="map" class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative; outline-style: none;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 20; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="./index_files/25375@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(198px, 246px, 0px); opacity: 1;"><img alt="" src="./index_files/25376@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(198px, 502px, 0px); opacity: 1;"><img alt="" src="./index_files/25375@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-58px, 246px, 0px); opacity: 1;"><img alt="" src="./index_files/25375@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(454px, 246px, 0px); opacity: 1;"><img alt="" src="./index_files/25376@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-58px, 502px, 0px); opacity: 1;"><img alt="" src="./index_files/25376@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(454px, 502px, 0px); opacity: 1;"><img alt="" src="./index_files/25374@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(198px, -10px, 0px); opacity: 1;"><img alt="" src="./index_files/25377@2x.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(198px, 758px, 0px); opacity: 1;"><img alt="" src="./index_files/25374@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-58px, -10px, 0px); opacity: 1;"><img alt="" src="./index_files/25374@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(454px, -10px, 0px); opacity: 1;"><img alt="" src="./index_files/25377@2x(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-58px, 758px, 0px); opacity: 1;"><img alt="" src="./index_files/25377@2x(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(454px, 758px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -14px; margin-top: -14px; width: 28px; height: 28px; transform: translate3d(284px, 208px, 0px); z-index: 208;"><div class="custom-marker" style="width:28px;height:28px;background:#fc8181;font-size:12px;">3</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -12px; margin-top: -12px; width: 24px; height: 24px; transform: translate3d(282px, 234px, 0px); z-index: 234;"><div class="custom-marker" style="width:24px;height:24px;background:#f6c90e;font-size:10px;">1</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -12px; margin-top: -12px; width: 24px; height: 24px; transform: translate3d(314px, 257px, 0px); z-index: 257;"><div class="custom-marker" style="width:24px;height:24px;background:#f6c90e;font-size:10px;">1</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -12px; margin-top: -12px; width: 24px; height: 24px; transform: translate3d(326px, 341px, 0px); z-index: 341;"><div class="custom-marker" style="width:24px;height:24px;background:#68d391;font-size:10px;">✓</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -14px; margin-top: -14px; width: 28px; height: 28px; transform: translate3d(411px, 436px, 0px); z-index: 436;"><div class="custom-marker" style="width:28px;height:28px;background:#fc8181;font-size:12px;">3</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -14px; margin-top: -14px; width: 28px; height: 28px; transform: translate3d(407px, 482px, 0px); z-index: 482;"><div class="custom-marker" style="width:28px;height:28px;background:#fc8181;font-size:12px;">2</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -12px; margin-top: -12px; width: 24px; height: 24px; transform: translate3d(416px, 535px, 0px); z-index: 535;"><div class="custom-marker" style="width:24px;height:24px;background:#68d391;font-size:10px;">✓</div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="file:///Users/sy/Downloads/index_2.html#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="file:///Users/sy/Downloads/index_2.html#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a></div></div></div></div>
+
+  <!-- 범례 -->
+  <div id="legend">
+    <h4>위험도</h4>
+    <div class="legend-row"><div class="legend-dot dot-red"></div> 위험 (문제 3개 이상)</div>
+    <div class="legend-row"><div class="legend-dot dot-yellow"></div> 주의 (문제 1~2개)</div>
+    <div class="legend-row"><div class="legend-dot dot-green"></div> 양호</div>
+  </div>
+
+  <!-- 의견 수렴 버튼 -->
+  <button id="feedback-btn" onclick="toggleFeedbackMode()" style="display: none;">
+    <span id="feedback-icon">📍</span>
+    <span id="feedback-text">지도에 의견 남기기</span>
+  </button>
+
+  <!-- 상세 패널 -->
+  <div id="detail-panel">
+    <div class="panel-header">
+      <div class="panel-header-top">
+        <div>
+          <div class="panel-zone" id="panel-zone">구역 정보</div>
+          <div class="panel-title" id="panel-title">지점을 클릭하세요</div>
+        </div>
+        <button id="close-panel" onclick="closePanel()">✕</button>
+      </div>
+      <div id="severity-badge"></div>
+      <div class="font-controls">
+        <span>글자 크기</span>
+        <button class="font-btn" onclick="changeFontSize(-1)">A−</button>
+        <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+        <button class="tts-btn" onclick="speakPanel()" id="tts-btn">🔊 읽어주기</button>
+      </div>
+    </div>
+    <div class="panel-body" id="panel-body">
+      <p style="color: var(--text-muted); text-align:center; margin-top:40px; font-size:14px;">
+        지도의 마커를 클릭하면<br>상세 정보가 표시됩니다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- 로그인/회원가입 모달 -->
+<div class="modal-overlay" id="auth-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-close-row">
+      <button class="modal-close" onclick="document.getElementById(&#39;auth-modal&#39;).style.display=&#39;none&#39;">✕</button>
+    </div>
+    <div class="modal-title">길잡이 시작하기</div>
+    <p class="modal-sub">의견을 남기려면 로그인이 필요해요.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab(&#39;login&#39;)">로그인</button>
+      <button class="auth-tab" onclick="switchTab(&#39;signup&#39;)">회원가입</button>
+    </div>
+
+    <div id="tab-login">
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="login-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="login-pw" placeholder="비밀번호 입력">
+      </div>
+      <button class="submit-btn" onclick="handleLogin()">로그인</button>
+    </div>
+
+    <div id="tab-signup" style="display:none;">
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="signup-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>비밀번호 (6자 이상)</label>
+        <input type="password" id="signup-pw" placeholder="비밀번호 입력">
+      </div>
+      <button class="submit-btn" onclick="handleSignup()">회원가입</button>
+    </div>
+
+    <div id="auth-error" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- 의견 수렴 모달 -->
+<div class="modal-overlay" id="feedback-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-close-row">
+      <button class="modal-close" onclick="closeFeedbackModal()">✕</button>
+    </div>
+    <div class="modal-title">📍 의견 남기기</div>
+    <p class="modal-sub">이 위치에서 불편하신 점이나 개선이 필요한 사항을 알려주세요.</p>
+
+    <div id="selected-loc-info" class="location-hint" style="display:none;">
+      📌 선택된 위치: <span id="selected-loc-text"></span>
+    </div>
+
+    <div class="form-group">
+      <label>불편 유형</label>
+      <select id="feedback-type">
+        <option value="보도폭">보도폭 협소</option>
+        <option value="턱">턱/단차</option>
+        <option value="경사">경사 위험</option>
+        <option value="장애물">장애물</option>
+        <option value="계단">계단 (경사로 없음)</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>내용</label>
+      <textarea id="feedback-content" placeholder="구체적인 내용을 입력해주세요..."></textarea>
+    </div>
+    <button class="submit-btn" onclick="submitFeedback()" id="feedback-submit-btn">의견 제출</button>
+    <div id="feedback-msg"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 지도 초기화
+// ============================================================
+const map = L.map('map', {
+  center: [37.5815, 127.0215],  // 조사 구역 중심
+  zoom: 16,
+  zoomControl: true
+});
+
+// 무료 CartoDB 다크 타일 (API 키 불필요)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 20
+}).addTo(map);
+
+// ============================================================
+// GeoJSON 데이터 로드 및 마커 표시
+// ============================================================
+const SEVERITY_COLOR = { red: '#fc8181', yellow: '#f6c90e', green: '#68d391' };
+const SEVERITY_LABEL = { red: '⚠️ 위험', yellow: '⚡ 주의', green: '✅ 양호' };
+
+const ICON_MAP = {
+  width: { emoji: '↔️', label: '보도폭 문제' },
+  curb: { emoji: '🧱', label: '턱/단차' },
+  slope: { emoji: '📐', label: '경사' },
+  discontinuity: { emoji: '⛓️', label: '보도 끊김' },
+  obstacle: { emoji: '🚧', label: '장애물' },
+  stairs: { emoji: '🪜', label: '계단' },
+  elevator: { emoji: '🛗', label: '엘리베이터' },
+};
+
+let allMarkers = [];
+let currentSpeech = null;
+
+function makeMarkerIcon(severity, count) {
+  const color = SEVERITY_COLOR[severity];
+  const size = count > 3 ? 32 : count > 1 ? 28 : 24;
+  return L.divIcon({
+    className: '',
+    html: `<div class="custom-marker" style="width:${size}px;height:${size}px;background:${color};font-size:${size < 28 ? 10 : 12}px;">${count || '✓'}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+}
+
+fetch('accessibility_data.geojson')
+  .then(r => r.json())
+  .then(data => {
+    data.features.forEach(f => {
+      const p = f.properties;
+      const [lng, lat] = f.geometry.coordinates;
+      const marker = L.marker([lat, lng], { icon: makeMarkerIcon(p.severity, p.icon_count) });
+
+      marker.on('click', () => openPanel(p, lat, lng));
+      marker.addTo(map);
+      allMarkers.push(marker);
+    });
+    console.log(`✅ ${data.features.length}개 지점 로드됨`);
+  })
+  .catch(err => {
+    console.warn('GeoJSON 로드 실패. 샘플 데이터로 표시합니다.', err);
+    loadSampleData();
+  });
+
+// 샘플 데이터 (GeoJSON 없을 때 테스트용)
+function loadSampleData() {
+  const samples = [
+    { lat: 37.584414, lng: 127.020281, severity: 'red', icon_count: 3, zone: 'a', icons: [{type:'obstacle',label:'장애물: 적재 물건'},{type:'width',label:'좁은 보도'},{type:'curb',label:'턱 있음'}], note: '인도와 차도 구분X', details: ['장애물: 적재 물건', '좁은 보도', '턱 있음', '📝 인도와 차도 구분X'] },
+    { lat: 37.58397, lng: 127.020226, severity: 'yellow', icon_count: 1, zone: 'a', icons: [{type:'obstacle',label:'장애물: 주정차'}], note: '어린이집 앞 주차장', details: ['장애물: 주정차', '📝 어린이집 앞 주차장(농협)'] },
+    { lat: 37.583573, lng: 127.020932, severity: 'yellow', icon_count: 1, zone: 'a,b', icons: [{type:'obstacle',label:'장애물: 주정차'}], note: '신호 없는 사거리', details: ['📝 신호 없는 사거리 - 통행량 多'] },
+    { lat: 37.582153, lng: 127.021177, severity: 'green', icon_count: 0, zone: 'b', icons: [], note: '상가 입출구 - 경사로X', details: ['📝 상가 입출구 - 경사로X'] },
+    { lat: 37.580539, lng: 127.022999, severity: 'red', icon_count: 3, zone: 'c,d', icons: [{type:'width',label:'매우 좁은 보도'},{type:'curb',label:'높은 턱'},{type:'slope',label:'경사 있음'}], note: '인도폭 좁고, 턱이 있음', details: ['매우 좁은 보도', '높은 턱', '경사 있음', '📝 인도폭 좁고, 턱이 있음'] },
+    { lat: 37.579761, lng: 127.022909, severity: 'red', icon_count: 2, zone: 'd', icons: [{type:'curb',label:'높은 턱'},{type:'obstacle',label:'장애물: 주차'}], note: '장애인 전용 주차장인데 턱 있음', details: ['높은 턱', '📝 장애인 전용 주차장인데 턱 있음'] },
+    { lat: 37.57885, lng: 127.0231, severity: 'green', icon_count: 0, zone: 'd', icons: [], note: '은행후문 휠체어시설o', details: ['📝 휠체어시설 있는 은행 후문 ✓'] },
+  ];
+
+  samples.forEach(s => {
+    const marker = L.marker([s.lat, s.lng], { icon: makeMarkerIcon(s.severity, s.icon_count) });
+    marker.on('click', () => openPanel(s, s.lat, s.lng));
+    marker.addTo(map);
+    allMarkers.push(marker);
+  });
+}
+
+// ============================================================
+// 상세 패널
+// ============================================================
+let panelFontSize = 15;
+
+function openPanel(p, lat, lng) {
+  const panel = document.getElementById('detail-panel');
+  const body = document.getElementById('panel-body');
+
+  document.getElementById('panel-zone').textContent = `조사구역 ${p.zone || ''}`;
+  document.getElementById('panel-title').textContent = `지점 #${p.id || ''}`;
+
+  // 위험도 배지
+  const badgeDiv = document.getElementById('severity-badge');
+  const sev = p.severity || 'green';
+  badgeDiv.innerHTML = `<span class="severity-badge severity-${sev}">${SEVERITY_LABEL[sev]}</span>`;
+
+  // 본문
+  const icons = p.icons || [];
+  let html = '';
+
+  if (icons.length === 0) {
+    html = `<div class="no-issues"><div class="big">✅</div>이 지점은 특별한 문제가 발견되지 않았습니다.</div>`;
+  } else {
+    html += `<div class="section-label">발견된 문제 (${icons.length}건)</div>`;
+    html += `<div class="icon-list">`;
+    icons.forEach(ic => {
+      const info = ICON_MAP[ic.type] || { emoji: '⚠️', label: ic.type };
+      html += `
+        <div class="icon-item">
+          <span class="icon-emoji">${info.emoji}</span>
+          <div>
+            <div class="icon-text">${ic.label || info.label}</div>
+            <div class="icon-sublabel">${info.label}</div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (p.note && p.note.trim()) {
+    html += `<div class="section-label" style="margin-top:16px;">현장 메모</div>`;
+    html += `<div class="note-box">${p.note}</div>`;
+  }
+
+  html += `<div style="height:20px;"></div>`;
+  body.innerHTML = html;
+  body.style.fontSize = panelFontSize + 'px';
+  panel.classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  if (currentSpeech) { window.speechSynthesis.cancel(); }
+}
+
+function changeFontSize(delta) {
+  panelFontSize = Math.max(11, Math.min(22, panelFontSize + delta));
+  document.getElementById('panel-body').style.fontSize = panelFontSize + 'px';
+  document.documentElement.style.setProperty('--font-size', panelFontSize + 'px');
+}
+
+function speakPanel() {
+  if (!window.speechSynthesis) { alert('이 브라우저는 음성 지원이 안 됩니다.'); return; }
+  if (currentSpeech) { window.speechSynthesis.cancel(); currentSpeech = null; }
+
+  const zone = document.getElementById('panel-zone').textContent;
+  const title = document.getElementById('panel-title').textContent;
+  const body = document.getElementById('panel-body').innerText;
+  const text = `${zone}, ${title}. ${body}`;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ko-KR';
+  utterance.rate = 0.9;
+
+  const btn = document.getElementById('tts-btn');
+  btn.textContent = '⏸ 읽는 중...';
+  utterance.onend = () => { btn.innerHTML = '🔊 읽어주기'; currentSpeech = null; };
+  utterance.onerror = () => { btn.innerHTML = '🔊 읽어주기'; currentSpeech = null; };
+
+  currentSpeech = utterance;
+  window.speechSynthesis.speak(utterance);
+}
+
+// ============================================================
+// 인증
+// ============================================================
+function switchTab(tab) {
+  document.getElementById('tab-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('tab-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value;
+  const pw = document.getElementById('login-pw').value;
+  try {
+    await window._fbFns.signInWithEmailAndPassword(window._auth, email, pw);
+    document.getElementById('auth-modal').style.display = 'none';
+  } catch(e) {
+    document.getElementById('auth-error').textContent = '로그인 실패: ' + translateFirebaseError(e.code);
+  }
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value;
+  const pw = document.getElementById('signup-pw').value;
+  try {
+    await window._fbFns.createUserWithEmailAndPassword(window._auth, email, pw);
+    document.getElementById('auth-modal').style.display = 'none';
+  } catch(e) {
+    document.getElementById('auth-error').textContent = '가입 실패: ' + translateFirebaseError(e.code);
+  }
+}
+
+async function handleLogout() {
+  await window._fbFns.signOut(window._auth);
+}
+
+function translateFirebaseError(code) {
+  const map = {
+    'auth/email-already-in-use': '이미 사용 중인 이메일입니다.',
+    'auth/invalid-email': '올바른 이메일 형식이 아닙니다.',
+    'auth/weak-password': '비밀번호는 6자 이상이어야 합니다.',
+    'auth/user-not-found': '이메일을 찾을 수 없습니다.',
+    'auth/wrong-password': '비밀번호가 틀렸습니다.',
+    'auth/invalid-credential': '이메일 또는 비밀번호가 올바르지 않습니다.',
+  };
+  return map[code] || code;
+}
+
+// ============================================================
+// 의견 수렴 (지도 위치 클릭)
+// ============================================================
+let feedbackMode = false;
+let selectedFeedbackLat = null;
+let selectedFeedbackLng = null;
+let tempFeedbackMarker = null;
+
+function toggleFeedbackMode() {
+  if (!window._auth || !window._auth.currentUser) {
+    document.getElementById('auth-modal').style.display = 'flex';
+    return;
+  }
+  feedbackMode = !feedbackMode;
+  const btn = document.getElementById('feedback-btn');
+  const mapEl = document.getElementById('map');
+
+  if (feedbackMode) {
+    btn.classList.add('active');
+    document.getElementById('feedback-icon').textContent = '✕';
+    document.getElementById('feedback-text').textContent = '위치 선택 취소';
+    mapEl.classList.add('picking');
+  } else {
+    btn.classList.remove('active');
+    document.getElementById('feedback-icon').textContent = '📍';
+    document.getElementById('feedback-text').textContent = '지도에 의견 남기기';
+    mapEl.classList.remove('picking');
+    if (tempFeedbackMarker) { map.removeLayer(tempFeedbackMarker); tempFeedbackMarker = null; }
+  }
+}
+
+map.on('click', (e) => {
+  if (!feedbackMode) return;
+  selectedFeedbackLat = e.latlng.lat.toFixed(6);
+  selectedFeedbackLng = e.latlng.lng.toFixed(6);
+
+  if (tempFeedbackMarker) map.removeLayer(tempFeedbackMarker);
+  tempFeedbackMarker = L.circleMarker([e.latlng.lat, e.latlng.lng], {
+    radius: 10, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.7, weight: 3
+  }).addTo(map);
+
+  document.getElementById('selected-loc-info').style.display = 'flex';
+  document.getElementById('selected-loc-text').textContent = `위도 ${selectedFeedbackLat}, 경도 ${selectedFeedbackLng}`;
+  document.getElementById('feedback-modal').style.display = 'flex';
+  document.getElementById('feedback-msg').textContent = '';
+});
+
+function closeFeedbackModal() {
+  document.getElementById('feedback-modal').style.display = 'none';
+  feedbackMode = false;
+  document.getElementById('feedback-btn').classList.remove('active');
+  document.getElementById('feedback-icon').textContent = '📍';
+  document.getElementById('feedback-text').textContent = '지도에 의견 남기기';
+  document.getElementById('map').classList.remove('picking');
+  if (tempFeedbackMarker) { map.removeLayer(tempFeedbackMarker); tempFeedbackMarker = null; }
+}
+
+async function submitFeedback() {
+  const type = document.getElementById('feedback-type').value;
+  const content = document.getElementById('feedback-content').value.trim();
+  const msgEl = document.getElementById('feedback-msg');
+  const btn = document.getElementById('feedback-submit-btn');
+
+  if (!content) { msgEl.className = 'error-msg'; msgEl.textContent = '내용을 입력해주세요.'; return; }
+  if (!selectedFeedbackLat) { msgEl.className = 'error-msg'; msgEl.textContent = '지도에서 위치를 먼저 클릭해주세요.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '제출 중...';
+  try {
+    await window._fbFns.addDoc(
+      window._fbFns.collection(window._db, 'feedbacks'),
+      {
+        type,
+        content,
+        lat: parseFloat(selectedFeedbackLat),
+        lng: parseFloat(selectedFeedbackLng),
+        userEmail: window._auth.currentUser.email,
+        createdAt: window._fbFns.serverTimestamp()
+      }
+    );
+    msgEl.className = 'success-msg';
+    msgEl.textContent = '✅ 의견이 접수되었습니다. 감사합니다!';
+    document.getElementById('feedback-content').value = '';
+
+    // 지도에 의견 마커 추가
+    L.circleMarker([parseFloat(selectedFeedbackLat), parseFloat(selectedFeedbackLng)], {
+      radius: 8, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.5, weight: 2
+    }).addTo(map).bindPopup(`<b>💬 시민 의견</b><br>${type}<br><small>${content.substring(0,50)}...</small>`);
+
+    setTimeout(() => closeFeedbackModal(), 1500);
+  } catch(e) {
+    msgEl.className = 'error-msg';
+    msgEl.textContent = '제출 실패: ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = '의견 제출';
+}
+</script>
+
+
+</body></html>
