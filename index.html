@@ -609,25 +609,20 @@ function renderMarkers() {
   });
 }
 
-// 하이라이트 구간 — 보문로 실제 도로 좌표(OSM)를 따라감
+// 하이라이트 구간 — 시작점~끝점 일직선
 const HILITE_PATH = [
   [37.5835833, 127.0209444], // 시작 (37°35'00.9"N 127°01'15.4"E)
-  [37.583399,  127.0204148],
-  [37.5826357, 127.0208371],
-  [37.5818506, 127.0212579],
-  [37.5810005, 127.0217063],
-  [37.5802985, 127.0220929],
   [37.5804722, 127.0226111]  // 끝 (37°34'49.7"N 127°01'21.4"E)
 ];
 function drawHighlight() {
   const coords = HILITE_PATH;
   // 흰색 외곽 글로우 (대비 강화)
   L.polyline(coords, { color: '#ffffff', weight: 18, opacity: 0.55, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
-  // 본선 — 초록색
-  const line = L.polyline(coords, { color: '#16a34a', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  // 본선 — 핑크(마젠타)
+  const line = L.polyline(coords, { color: '#e11d8f', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   line.bindTooltip('⚠️ 통행 유의 구간', { sticky: true, direction: 'top' });
   // 시작 지점 라벨
-  L.marker(coords[0], { icon: L.divIcon({ className: '', html: '<div style="background:#16a34a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);">⚠️ 통행 유의 구간</div>', iconSize:[120,22], iconAnchor:[60,28] }) }).addTo(map);
+  L.marker(coords[0], { icon: L.divIcon({ className: '', html: '<div style="background:#e11d8f;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);">⚠️ 통행 유의 구간</div>', iconSize:[120,22], iconAnchor:[60,28] }) }).addTo(map);
 }
 
 // ============================================================
