@@ -609,23 +609,25 @@ function renderMarkers() {
   });
 }
 
-// 하이라이트 구간 (실제 도로를 따라감)
-const HILITE_START = [37.5835833, 127.0209444]; // 37°35'00.9"N 127°01'15.4"E
-const HILITE_END   = [37.5804722, 127.0226111]; // 37°34'49.7"N 127°01'21.4"E
-async function drawHighlight() {
-  let coords = [HILITE_START, HILITE_END]; // 실패 시 직선 폴백
-  try {
-    const u = `https://router.project-osrm.org/route/v1/driving/${HILITE_START[1]},${HILITE_START[0]};${HILITE_END[1]},${HILITE_END[0]}?overview=full&geometries=geojson`;
-    const d = await (await fetch(u)).json();
-    if (d.routes && d.routes[0] && d.routes[0].geometry) coords = d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-  } catch (e) { console.warn('하이라이트 경로 계산 실패, 직선으로 표시:', e); }
+// 하이라이트 구간 — 보문로 실제 도로 좌표(OSM)를 따라감
+const HILITE_PATH = [
+  [37.5835833, 127.0209444], // 시작 (37°35'00.9"N 127°01'15.4"E)
+  [37.583399,  127.0204148],
+  [37.5826357, 127.0208371],
+  [37.5818506, 127.0212579],
+  [37.5810005, 127.0217063],
+  [37.5802985, 127.0220929],
+  [37.5804722, 127.0226111]  // 끝 (37°34'49.7"N 127°01'21.4"E)
+];
+function drawHighlight() {
+  const coords = HILITE_PATH;
   // 흰색 외곽 글로우 (대비 강화)
-  L.polyline(coords, { color: '#ffffff', weight: 18, opacity: 0.5, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
-  // 본선 — 마커(노랑)·도로(주황)와 구분되는 마젠타
-  const line = L.polyline(coords, { color: '#e11d8f', weight: 8, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  L.polyline(coords, { color: '#ffffff', weight: 18, opacity: 0.55, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
+  // 본선 — 초록색
+  const line = L.polyline(coords, { color: '#16a34a', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(map);
   line.bindTooltip('⚠️ 통행 유의 구간', { sticky: true, direction: 'top' });
-  // 구간 양 끝 라벨
-  L.marker(coords[0], { icon: L.divIcon({ className: '', html: '<div style="background:#e11d8f;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);">⚠️ 통행 유의 구간</div>', iconSize:[120,22], iconAnchor:[60,28] }) }).addTo(map);
+  // 시작 지점 라벨
+  L.marker(coords[0], { icon: L.divIcon({ className: '', html: '<div style="background:#16a34a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);">⚠️ 통행 유의 구간</div>', iconSize:[120,22], iconAnchor:[60,28] }) }).addTo(map);
 }
 
 // ============================================================
@@ -1043,6 +1045,13 @@ function closeFeedbackModal() {
   if (tempFeedbackMarker) { map.removeLayer(tempFeedbackMarker); tempFeedbackMarker = null; }
 }
 
+// ============================================================
+// 의견 → Google 시트 전송 설정
+//  ↓↓↓ 아래 따옴표 안에 Apps Script 웹앱 URL(.../exec)을 붙여넣으세요.
+//  (붙여넣기 전에는 Firebase에만 저장되고, 붙여넣으면 구글 시트에도 자동 기록됩니다.)
+// ============================================================
+const SHEET_WEBHOOK_URL = "";
+
 async function submitFeedback() {
   const type = document.getElementById('feedback-type').value;
   const content = document.getElementById('feedback-content').value.trim();
@@ -1051,17 +1060,45 @@ async function submitFeedback() {
   if (!content) { msgEl.className = 'error-msg'; msgEl.textContent = '내용을 입력해주세요.'; return; }
   if (!selectedFeedbackLat) { msgEl.className = 'error-msg'; msgEl.textContent = '지도에서 위치를 먼저 클릭해주세요.'; return; }
   btn.disabled = true; btn.textContent = '제출 중...';
+
+  const userEmail = (window._auth && window._auth.currentUser) ? window._auth.currentUser.email : '비로그인';
+  const payload = {
+    type, content,
+    lat: parseFloat(selectedFeedbackLat), lng: parseFloat(selectedFeedbackLng),
+    userEmail, createdAt: new Date().toISOString()
+  };
+
+  let ok = false;
+  // 1) Google 시트로 전송
+  if (SHEET_WEBHOOK_URL) {
+    try {
+      await fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      ok = true; // no-cors는 응답을 못 읽으므로 전송 성공으로 간주
+    } catch (e) { console.warn('시트 전송 실패:', e); }
+  }
+  // 2) Firebase에도 백업 저장(로그인 상태일 때)
   try {
-    await window._fbFns.addDoc(window._fbFns.collection(window._db, 'feedbacks'), {
-      type, content, lat: parseFloat(selectedFeedbackLat), lng: parseFloat(selectedFeedbackLng),
-      userEmail: window._auth.currentUser.email, createdAt: window._fbFns.serverTimestamp()
-    });
+    if (window._db && window._auth && window._auth.currentUser) {
+      await window._fbFns.addDoc(window._fbFns.collection(window._db, 'feedbacks'), {
+        ...payload, createdAt: window._fbFns.serverTimestamp()
+      });
+      ok = true;
+    }
+  } catch (e) { console.warn('Firebase 저장 실패:', e); }
+
+  if (ok) {
     msgEl.className = 'success-msg'; msgEl.textContent = '✅ 의견이 접수되었습니다. 감사합니다!';
     document.getElementById('feedback-content').value = '';
-    L.circleMarker([parseFloat(selectedFeedbackLat), parseFloat(selectedFeedbackLng)], { radius: 8, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.5, weight: 2 })
+    L.circleMarker([payload.lat, payload.lng], { radius: 8, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.5, weight: 2 })
       .addTo(map).bindPopup(`<b>💬 시민 의견</b><br>${type}<br><small>${content.substring(0,50)}...</small>`);
     setTimeout(() => closeFeedbackModal(), 1500);
-  } catch(e) { msgEl.className = 'error-msg'; msgEl.textContent = '제출 실패: ' + e.message; }
+  } else {
+    msgEl.className = 'error-msg'; msgEl.textContent = '제출 실패: 시트 URL이 설정되지 않았거나 네트워크 오류입니다.';
+  }
   btn.disabled = false; btn.textContent = '의견 제출';
 }
 
