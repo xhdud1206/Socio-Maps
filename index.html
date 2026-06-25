@@ -853,34 +853,79 @@ function geoError() {
 map.on('dragstart', () => { if (liveWatchId !== null) followMe = false; });
 
 // ============================================================
-// 장소·주소 검색 (Nominatim 지오코딩) — 임의의 위치로 길찾기
+// 장소·주소 검색 — 카카오맵 연동(키 있으면) + OSM 자동 폴백
+//  ↓↓↓ 카카오 JavaScript 키를 따옴표 안에 붙여넣으면
+//      "보문역" 같은 한국 장소·지하철역이 정확하게 검색됩니다.
+//      (키 발급: developers.kakao.com → 애플리케이션 → JavaScript 키)
 // ============================================================
-async function geocodeTo(which) {
-  const q = document.getElementById('geo-q').value.trim();
+const KAKAO_JS_KEY = "e403e100a0975d33c4f442e3f2e20834";
+
+let kakaoReady = false;
+(function loadKakao() {
+  if (!KAKAO_JS_KEY) return; // 키가 없으면 OSM 검색으로 동작
+  const s = document.createElement('script');
+  s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
+  s.onload = () => {
+    if (window.kakao && kakao.maps) kakao.maps.load(() => { kakaoReady = true; console.log('✅ 카카오맵 검색 연동됨'); });
+  };
+  s.onerror = () => console.warn('카카오 SDK 로드 실패 — OSM 검색으로 동작합니다. (키/도메인 등록 확인)');
+  document.head.appendChild(s);
+})();
+
+// 검색 결과 리스트 렌더 (제공자 공통)
+function renderGeoResults(which, items) {
   const box = document.getElementById('geo-results');
+  box.innerHTML = '';
+  if (!items.length) { setRouteHint('검색 결과가 없습니다. 다른 키워드로 시도해보세요.'); return; }
+  setRouteHint(`${which === 'start' ? '🟢 출발지' : '🔴 도착지'}로 지정할 장소를 선택하세요.`);
+  items.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'geo-item';
+    el.innerHTML = `📍 <b>${it.short}</b>` + (it.sub ? `<br><small>${it.sub}</small>` : '');
+    el.onclick = () => {
+      setRoutePoint(which, L.latLng(it.lat, it.lng), it.short);
+      box.innerHTML = '';
+      document.getElementById('geo-q').value = '';
+      map.setView([it.lat, it.lng], Math.max(map.getZoom(), 15));
+    };
+    box.appendChild(el);
+  });
+}
+
+function geocodeTo(which) {
+  const q = document.getElementById('geo-q').value.trim();
   if (!q) { setRouteHint('검색어를 입력하세요.'); return; }
   if (!routeMode) toggleRouteMode();
   setRouteHint(`"${q}" 검색 중...`);
-  box.innerHTML = '';
+  document.getElementById('geo-results').innerHTML = '';
+
+  if (kakaoReady) { // 카카오 장소 검색 (한국 지명에 강함)
+    const ps = new kakao.maps.services.Places();
+    ps.keywordSearch(q, (data, status) => {
+      if (status === kakao.maps.services.Status.OK) {
+        renderGeoResults(which, data.slice(0, 6).map(d => ({
+          short: d.place_name,
+          sub: d.road_address_name || d.address_name || '',
+          lat: parseFloat(d.y), lng: parseFloat(d.x)
+        })));
+      } else {
+        setRouteHint('검색 결과가 없습니다. 다른 키워드로 시도해보세요.');
+      }
+    });
+    return;
+  }
+  geocodeNominatim(which, q); // OSM 폴백
+}
+
+async function geocodeNominatim(which, q) {
   try {
     const u = `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=ko&countrycodes=kr&q=${encodeURIComponent(q)}`;
     const arr = await (await fetch(u)).json();
-    if (!arr.length) { setRouteHint('검색 결과가 없습니다. 다른 키워드로 시도해보세요.'); return; }
-    setRouteHint(`${which === 'start' ? '🟢 출발지' : '🔴 도착지'}로 지정할 장소를 선택하세요.`);
-    arr.forEach(r => {
-      const name = r.display_name;
-      const short = name.split(',').slice(0, 2).join(', ');
-      const el = document.createElement('div');
-      el.className = 'geo-item';
-      el.innerHTML = `📍 <b>${short}</b><br><small>${name}</small>`;
-      el.onclick = () => {
-        setRoutePoint(which, L.latLng(parseFloat(r.lat), parseFloat(r.lon)), short);
-        box.innerHTML = '';
-        document.getElementById('geo-q').value = '';
-        map.setView([parseFloat(r.lat), parseFloat(r.lon)], Math.max(map.getZoom(), 15));
-      };
-      box.appendChild(el);
-    });
+    renderGeoResults(which, arr.map(r => ({
+      short: r.display_name.split(',').slice(0, 2).join(', '),
+      sub: r.display_name,
+      lat: parseFloat(r.lat), lng: parseFloat(r.lon)
+    })));
   } catch (e) { setRouteHint('검색에 실패했습니다. 잠시 후 다시 시도해주세요.'); console.warn(e); }
 }
 
