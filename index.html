@@ -71,6 +71,7 @@
     --blue: #63b3ed;
     --radius: 14px;
     --font-size: 15px;
+    --app-scale: 1;
   }
 
   body {
@@ -186,6 +187,13 @@
   }
   .route-tools button:hover { background: var(--border); }
   .route-tools button.primary { background: var(--accent); color:#0f1117; border:none; font-weight:700; }
+  .geo-box { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; }
+  .geo-input { width:100%; background: var(--surface2); border:1px solid var(--border); color:var(--text); padding:9px 11px; border-radius:8px; font-size:13px; font-family:inherit; }
+  .geo-input:focus { outline:none; border-color: var(--accent); }
+  #geo-results { display:flex; flex-direction:column; gap:4px; }
+  .geo-item { background: var(--surface2); border:1px solid var(--border); border-radius:7px; padding:7px 9px; font-size:12px; cursor:pointer; line-height:1.4; }
+  .geo-item:hover { background: var(--border); }
+  .geo-item small { color: var(--text-muted); }
   #route-result { margin-top: 12px; display:none; }
   #route-result.show { display:block; }
   .route-stat-row { display:flex; gap:8px; margin-bottom:8px; }
@@ -278,6 +286,11 @@
   }
   .rt-pin { font-size: 26px; line-height: 1; text-align:center; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 
+  /* 실시간 내 위치 (파란 점 + 펄스) */
+  .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(26,115,232,0.4), 0 1px 4px rgba(0,0,0,0.4); position: relative; }
+  .me-dot::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: rgba(26,115,232,0.25); animation: mePulse 1.8s ease-out infinite; }
+  @keyframes mePulse { 0% { transform: scale(0.6); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
+
   /* Leaflet 팝업 */
   .leaflet-popup-content-wrapper { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
   .leaflet-popup-tip { background: var(--surface) !important; }
@@ -315,6 +328,34 @@
     #route-panel { width: calc(100% - 28px); }
     .logo span { display:none; }
   }
+
+  /* ===== 글자 크기 조절(전역 스케일) — A-/A+ 버튼이 --app-scale 을 바꾸면 아래 텍스트가 함께 커짐 ===== */
+  .logo span      { font-size: calc(13px * var(--app-scale)); }
+  .gfont span     { font-size: calc(11px * var(--app-scale)); }
+  #user-bar       { font-size: calc(13px * var(--app-scale)); }
+  #login-trigger  { font-size: calc(14px * var(--app-scale)); }
+  .panel-zone     { font-size: calc(11px * var(--app-scale)); }
+  .panel-title    { font-size: calc(18px * var(--app-scale)); }
+  .severity-badge { font-size: calc(12px * var(--app-scale)); }
+  .panel-tools .lbl { font-size: calc(11px * var(--app-scale)); }
+  .tts-btn        { font-size: calc(13px * var(--app-scale)); }
+  .section-label  { font-size: calc(11px * var(--app-scale)); }
+  .haz-text       { font-size: calc(15px * var(--app-scale)); }
+  .haz-degree     { font-size: calc(13px * var(--app-scale)); }
+  .note-box       { font-size: calc(14px * var(--app-scale)); }
+  .panel-route-btns button { font-size: calc(13px * var(--app-scale)); }
+  .no-issues      { font-size: calc(15px * var(--app-scale)); }
+  #legend         { font-size: calc(12px * var(--app-scale)); }
+  #legend h4      { font-size: calc(11px * var(--app-scale)); }
+  .chip           { font-size: calc(12px * var(--app-scale)); }
+  #route-panel    { font-size: calc(13px * var(--app-scale)); }
+  .route-title    { font-size: calc(15px * var(--app-scale)); }
+  .route-input    { font-size: calc(13px * var(--app-scale)); }
+  .route-tools button { font-size: calc(12px * var(--app-scale)); }
+  .route-stat .num { font-size: calc(18px * var(--app-scale)); }
+  .route-stat .lbl { font-size: calc(11px * var(--app-scale)); }
+  .route-warn, .route-hint { font-size: calc(12px * var(--app-scale)); }
+  .act-btn        { font-size: calc(14px * var(--app-scale)); }
 </style>
 </head>
 <body>
@@ -343,6 +384,7 @@
   <!-- 우상단 액션 -->
   <div class="map-actions">
     <button class="act-btn" id="route-toggle" onclick="toggleRouteMode()">🧭 길찾기</button>
+    <button class="act-btn" id="locate-toggle" onclick="toggleLiveLocation()">📍 내 위치</button>
   </div>
 
   <!-- 길찾기 패널 -->
@@ -352,13 +394,23 @@
       <span class="x" onclick="toggleRouteMode()">✕</span>
     </div>
     <div id="route-hint" class="route-hint"></div>
+    <!-- 장소·주소 검색 -->
+    <div class="geo-box">
+      <input id="geo-q" class="geo-input" placeholder="장소·주소 검색 (예: 성신여대입구역)"
+             onkeydown="if(event.key==='Enter') geocodeTo('end')" />
+      <div class="route-tools" style="margin:6px 0 4px;">
+        <button onclick="geocodeTo('start')">🟢 출발지로</button>
+        <button onclick="geocodeTo('end')">🔴 도착지로</button>
+      </div>
+      <div id="geo-results"></div>
+    </div>
     <div class="route-field">
       <div class="route-dot start"></div>
-      <div class="route-input placeholder" id="route-start" onclick="pickRoutePoint('start')">출발지 선택</div>
+      <div class="route-input placeholder" id="route-start" onclick="pickRoutePoint('start')">출발지 — 검색·지도클릭·내위치</div>
     </div>
     <div class="route-field">
       <div class="route-dot end"></div>
-      <div class="route-input placeholder" id="route-end" onclick="pickRoutePoint('end')">도착지 선택</div>
+      <div class="route-input placeholder" id="route-end" onclick="pickRoutePoint('end')">도착지 — 검색·지도클릭</div>
     </div>
     <div class="route-tools">
       <button onclick="useMyLocation()">📍 내 위치</button>
@@ -468,7 +520,7 @@
 // ============================================================
 // 조사 데이터 (현장조사표에서 추출)
 // ============================================================
-const POINTS = [{"id": 3, "zone": "a", "lat": 37.584414, "lng": 127.020281, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "적재 물건"}], "note": "", "highlight": false}, {"id": 4, "zone": "a", "lat": 37.58435, "lng": 127.019942, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}], "note": "", "highlight": false}, {"id": 5, "zone": "a", "lat": 37.584207, "lng": 127.020658, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "highlight": false}, {"id": 6, "zone": "a", "lat": 37.584056, "lng": 127.020635, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "적재 물건"}], "note": "", "highlight": false}, {"id": 7, "zone": "a", "lat": 37.58397, "lng": 127.020226, "hazards": [{"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "어린이집 앞 주차장이 있어 유아 이동이 잦으니 통행 시 각별히 주의하세요.", "highlight": false}, {"id": 8, "zone": "a", "lat": 37.583923, "lng": 127.021243, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}], "note": "", "highlight": false}, {"id": 9, "zone": "a", "lat": 37.583804, "lng": 127.021458, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "낮음"}, {"type": "slope", "icon": "⛰️", "label": "경사", "degree": "가파름"}], "note": "", "highlight": false}, {"id": 10, "zone": "a", "lat": 37.583768, "lng": 127.021355, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "낮음"}, {"type": "slope", "icon": "⛰️", "label": "경사", "degree": "가파름"}], "note": "", "highlight": false}, {"id": 11, "zone": "", "lat": 37.5836285, "lng": 127.0213526, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 12, "zone": "a", "lat": 37.583746, "lng": 127.02077, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "낮음"}, {"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "highlight": false}, {"id": 13, "zone": "b", "lat": 37.583617, "lng": 127.021156, "hazards": [{"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "적재 물건"}], "note": "", "highlight": false}, {"id": 14, "zone": "a, b", "lat": 37.583573, "lng": 127.020932, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "신호등 없는 사거리이고 통행량이 많으니 횡단 시 주의하세요.", "highlight": false}, {"id": 15, "zone": "b", "lat": 37.583568, "lng": 127.021419, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 16, "zone": "b", "lat": 37.583528, "lng": 127.020915, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "전봇대"}], "note": "", "highlight": false}, {"id": 17, "zone": "b", "lat": 37.583477, "lng": 127.020772, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 18, "zone": "b", "lat": 37.583333, "lng": 127.020616, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 19, "zone": "b", "lat": 37.583275, "lng": 127.020622, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 20, "zone": "b", "lat": 37.583157, "lng": 127.02116, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 22, "zone": "b", "lat": 37.583004, "lng": 127.021149, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "highlight": false}, {"id": 23, "zone": "b", "lat": 37.582945, "lng": 127.021635, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 24, "zone": "b", "lat": 37.582723, "lng": 127.021116, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 25, "zone": "b", "lat": 37.582344, "lng": 127.021061, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "highlight": false}, {"id": 26, "zone": "b", "lat": 37.582153, "lng": 127.021177, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 27, "zone": "b, c", "lat": 37.581939, "lng": 127.021523, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "", "highlight": false}, {"id": 28, "zone": "c", "lat": 37.5819835, "lng": 127.0218831, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}, {"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 29, "zone": "c", "lat": 37.581571, "lng": 127.022013, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 30, "zone": "c", "lat": 37.581336, "lng": 127.022138, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "낮음"}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "적재물건"}], "note": "안전콘이 설치되어 진로를 방해하니 통행에 유의하세요.", "highlight": false}, {"id": 31, "zone": "c", "lat": 37.581104, "lng": 127.021962, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 32, "zone": "c, d", "lat": 37.580539, "lng": 127.022999, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "매우 좁음"}, {"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}], "note": "", "highlight": false}, {"id": 34, "zone": "c, d", "lat": 37.580476, "lng": 127.022606, "hazards": [{"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "컨테이너"}], "note": "", "highlight": false}, {"id": 37, "zone": "c, d", "lat": 37.580394, "lng": 127.022401, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "컨테이너"}, {"type": "signal", "icon": "🚦", "label": "횡단신호 짧음", "degree": "짧음"}], "note": "", "highlight": false}, {"id": 38, "zone": "d", "lat": 37.58036, "lng": 127.0227, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}], "note": "", "highlight": false}, {"id": 40, "zone": "d", "lat": 37.580033, "lng": 127.022847, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 41, "zone": "d", "lat": 37.579975, "lng": 127.022763, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 42, "zone": "d", "lat": 37.57997, "lng": 127.0228, "hazards": [{"type": "break", "icon": "🚧", "label": "보도 끊김", "degree": ""}, {"type": "obstacle", "icon": "⚠️", "label": "장애물", "degree": "주정차"}], "note": "", "highlight": false}, {"id": 43, "zone": "d", "lat": 37.5799, "lng": 127.0225, "hazards": [{"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 44, "zone": "d", "lat": 37.579771, "lng": 127.023373, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "", "highlight": false}, {"id": 45, "zone": "d", "lat": 37.579761, "lng": 127.022909, "hazards": [{"type": "curb", "icon": "🧱", "label": "턱(단차)", "degree": "보통"}], "note": "", "highlight": false}, {"id": 46, "zone": "d", "lat": 37.57973, "lng": 127.023222, "hazards": [{"type": "stairs", "icon": "🪜", "label": "계단", "degree": ""}], "note": "", "highlight": false}, {"id": 47, "zone": "d", "lat": 37.579691, "lng": 127.022682, "hazards": [{"type": "slope", "icon": "⛰️", "label": "경사", "degree": "가파름"}, {"type": "signal", "icon": "🚦", "label": "횡단신호 짧음", "degree": "짧음"}], "note": "", "highlight": false}, {"id": 48, "zone": "d", "lat": 37.57965, "lng": 127.0228, "hazards": [{"type": "signal", "icon": "🚦", "label": "횡단신호 짧음", "degree": "짧음"}], "note": "", "highlight": false}, {"id": 49, "zone": "d", "lat": 37.579594, "lng": 127.02304, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "주차구역이 많은 골목이므로 차량 통행에 유의하세요.", "highlight": true}, {"id": 52, "zone": "d", "lat": 37.579392, "lng": 127.023113, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "", "highlight": false}, {"id": 54, "zone": "d", "lat": 37.579246, "lng": 127.02322, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "", "highlight": false}, {"id": 56, "zone": "d", "lat": 37.57901, "lng": 127.023342, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "", "highlight": false}, {"id": 57, "zone": "d", "lat": 37.57894, "lng": 127.0234, "hazards": [{"type": "width", "icon": "↔️", "label": "보도 폭 좁음", "degree": "좁음"}], "note": "", "highlight": false}];
+const POINTS = [{"id": 3, "zone": "a", "lat": 37.584414, "lng": 127.020281, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "적재 물건", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 4, "zone": "a", "lat": 37.58435, "lng": 127.019942, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}], "note": "", "impassable": false}, {"id": 5, "zone": "a", "lat": 37.584207, "lng": 127.020658, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "impassable": false}, {"id": 6, "zone": "a", "lat": 37.584056, "lng": 127.020635, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "obstacle", "label": "장애물", "degree": "적재 물건", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 7, "zone": "a", "lat": 37.58397, "lng": 127.020226, "hazards": [{"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "어린이집 앞 주차장이 있어 유아 이동이 잦으니 통행 시 각별히 주의하세요.", "impassable": false}, {"id": 8, "zone": "a", "lat": 37.583923, "lng": 127.021243, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "가게 앞 휠체어 진입불가 - 경사로X", "impassable": true}, {"id": 9, "zone": "a", "lat": 37.583804, "lng": 127.021458, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "curb", "label": "턱(단차)", "degree": "낮음", "icon": "🧱"}, {"type": "slope", "label": "경사", "degree": "가파름", "icon": "⛰️"}], "note": "", "impassable": false}, {"id": 10, "zone": "a", "lat": 37.583768, "lng": 127.021355, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "curb", "label": "턱(단차)", "degree": "낮음", "icon": "🧱"}, {"type": "slope", "label": "경사", "degree": "가파름", "icon": "⛰️"}], "note": "", "impassable": false}, {"id": 11, "zone": "", "lat": 37.5836285, "lng": 127.0213526, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 12, "zone": "a", "lat": 37.583746, "lng": 127.02077, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "낮음", "icon": "🧱"}, {"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "impassable": false}, {"id": 13, "zone": "b", "lat": 37.583617, "lng": 127.021156, "hazards": [{"type": "obstacle", "label": "장애물", "degree": "적재 물건", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 14, "zone": "a, b", "lat": 37.583573, "lng": 127.020932, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "신호등 없는 사거리이고 통행량이 많으니 횡단 시 주의하세요.", "impassable": false}, {"id": 15, "zone": "b", "lat": 37.583568, "lng": 127.021419, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 16, "zone": "b", "lat": 37.583528, "lng": 127.020915, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "obstacle", "label": "장애물", "degree": "전봇대", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 17, "zone": "b", "lat": 37.583477, "lng": 127.020772, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 18, "zone": "b", "lat": 37.583333, "lng": 127.020616, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 19, "zone": "b", "lat": 37.583275, "lng": 127.020622, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 20, "zone": "b", "lat": 37.583157, "lng": 127.02116, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 22, "zone": "b", "lat": 37.583004, "lng": 127.021149, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "impassable": false}, {"id": 23, "zone": "b", "lat": 37.582945, "lng": 127.021635, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 24, "zone": "b", "lat": 37.582723, "lng": 127.021116, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 25, "zone": "b", "lat": 37.582344, "lng": 127.021061, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "주차장 입출구가 있어 차량 출입이 잦으니 통행 시 주의하세요.", "impassable": false}, {"id": 26, "zone": "b", "lat": 37.582153, "lng": 127.021177, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 27, "zone": "b, c", "lat": 37.581939, "lng": 127.021523, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "", "impassable": false}, {"id": 28, "zone": "c", "lat": 37.5819835, "lng": 127.0218831, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}, {"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 29, "zone": "c", "lat": 37.581571, "lng": 127.022013, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 30, "zone": "c", "lat": 37.581336, "lng": 127.022138, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "낮음", "icon": "🧱"}, {"type": "obstacle", "label": "장애물", "degree": "적재물건", "icon": "⚠️"}], "note": "안전콘이 설치되어 진로를 방해하니 통행에 유의하세요.", "impassable": false}, {"id": 31, "zone": "c", "lat": 37.581104, "lng": 127.021962, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 32, "zone": "c, d", "lat": 37.580539, "lng": 127.022999, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "매우 좁음", "icon": "↔️"}, {"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}], "note": "", "impassable": false}, {"id": 34, "zone": "c, d", "lat": 37.580476, "lng": 127.022606, "hazards": [{"type": "obstacle", "label": "장애물", "degree": "컨테이너", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 37, "zone": "c, d", "lat": 37.580394, "lng": 127.022401, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "obstacle", "label": "장애물", "degree": "컨테이너", "icon": "⚠️"}, {"type": "signal", "label": "횡단신호 짧음", "degree": "짧음", "icon": "🚦"}], "note": "", "impassable": false}, {"id": 38, "zone": "d", "lat": 37.58036, "lng": 127.0227, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}], "note": "", "impassable": false}, {"id": 40, "zone": "d", "lat": 37.580033, "lng": 127.022847, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 41, "zone": "d", "lat": 37.579975, "lng": 127.022763, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 42, "zone": "d", "lat": 37.57997, "lng": 127.0228, "hazards": [{"type": "break", "label": "보도 끊김", "degree": "", "icon": "🚧"}, {"type": "obstacle", "label": "장애물", "degree": "주정차", "icon": "⚠️"}], "note": "", "impassable": false}, {"id": 43, "zone": "d", "lat": 37.5799, "lng": 127.0225, "hazards": [{"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 44, "zone": "d", "lat": 37.579771, "lng": 127.023373, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "", "impassable": false}, {"id": 45, "zone": "d", "lat": 37.579761, "lng": 127.022909, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "보통", "icon": "🧱"}], "note": "", "impassable": false}, {"id": 46, "zone": "d", "lat": 37.57973, "lng": 127.023222, "hazards": [{"type": "stairs", "label": "계단/단차", "degree": "", "icon": "🪜"}], "note": "", "impassable": false}, {"id": 47, "zone": "d", "lat": 37.579691, "lng": 127.022682, "hazards": [{"type": "slope", "label": "경사", "degree": "가파름", "icon": "⛰️"}, {"type": "signal", "label": "횡단신호 짧음", "degree": "짧음", "icon": "🚦"}], "note": "", "impassable": false}, {"id": 48, "zone": "d", "lat": 37.57965, "lng": 127.0228, "hazards": [{"type": "signal", "label": "횡단신호 짧음", "degree": "짧음", "icon": "🚦"}], "note": "", "impassable": false}, {"id": 49, "zone": "d", "lat": 37.579594, "lng": 127.02304, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "주차구역이 많은 골목이므로 차량 통행에 유의하세요.", "impassable": false}, {"id": 52, "zone": "d", "lat": 37.579392, "lng": 127.023113, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "", "impassable": false}, {"id": 54, "zone": "d", "lat": 37.579246, "lng": 127.02322, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "", "impassable": false}, {"id": 56, "zone": "d", "lat": 37.57901, "lng": 127.023342, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "", "impassable": false}, {"id": 57, "zone": "d", "lat": 37.57894, "lng": 127.0234, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}], "note": "", "impassable": false}, {"id": 61, "zone": "", "lat": 37.58365, "lng": 127.02124, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "높음", "icon": "🧱"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "턱이 높아 휠체어가 차도-인도 경계를 지나갈 수 없음", "impassable": true}, {"id": 62, "zone": "", "lat": 37.58377, "lng": 127.02158, "hazards": [{"type": "slope", "label": "경사", "degree": "가파름", "icon": "⛰️"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "경사가 가파름 - 휠체어 통행 어려움", "impassable": true}, {"id": 63, "zone": "", "lat": 37.57971, "lng": 127.02363, "hazards": [{"type": "curb", "label": "턱(단차)", "degree": "높음", "icon": "🧱"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "턱이 높아 휠체어가 차도-인도 경계를 지나갈 수 없음", "impassable": true}, {"id": 64, "zone": "", "lat": 37.5791, "lng": 127.024, "hazards": [{"type": "width", "label": "보도 폭 좁음", "degree": "좁음", "icon": "↔️"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "보도가 좁아 휠체어 통행 어려움", "impassable": true}, {"id": 65, "zone": "", "lat": 37.583707, "lng": 127.021452, "hazards": [{"type": "slope", "label": "경사", "degree": "매우 가파름", "icon": "⛰️"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "경사가 매우 가파름 - 휠체어 통행 불가", "impassable": true}, {"id": 66, "zone": "", "lat": 37.580539, "lng": 127.022999, "hazards": [{"type": "slope", "label": "경사", "degree": "매우 가파름", "icon": "⛰️"}, {"type": "impassable", "label": "휠체어 통행 곤란", "degree": "", "icon": "🚫"}], "note": "경사가 매우 가파름 - 휠체어 통행 불가", "impassable": true}];
 
 // 카테고리 정의 (아이콘 + 색)
 const CATS = {
@@ -557,21 +609,23 @@ function renderMarkers() {
   });
 }
 
-// 49번 골목 하이라이트 (주차구역 많은 골목)
-const ALLEY_49 = [
-  [37.579691, 127.022682],
-  [37.57965,  127.0228],
-  [37.579594, 127.02304],
-  [37.579559, 127.023191],
-  [37.579515, 127.023383]
-];
-function drawAlleyHighlight() {
-  // 외곽 글로우
-  L.polyline(ALLEY_49, { color: '#f6c90e', weight: 18, opacity: 0.25, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  // 본선
-  const line = L.polyline(ALLEY_49, { color: '#f6c90e', weight: 7, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-  line.bindTooltip('⚠️ 주차구역이 많은 골목 — 차량 통행 유의', { sticky: true, direction: 'top' });
-  line.on('click', () => { const p49 = POINTS.find(p => p.id === 49); if (p49) openPanel(p49); });
+// 하이라이트 구간 (실제 도로를 따라감)
+const HILITE_START = [37.5835833, 127.0209444]; // 37°35'00.9"N 127°01'15.4"E
+const HILITE_END   = [37.5804722, 127.0226111]; // 37°34'49.7"N 127°01'21.4"E
+async function drawHighlight() {
+  let coords = [HILITE_START, HILITE_END]; // 실패 시 직선 폴백
+  try {
+    const u = `https://router.project-osrm.org/route/v1/driving/${HILITE_START[1]},${HILITE_START[0]};${HILITE_END[1]},${HILITE_END[0]}?overview=full&geometries=geojson`;
+    const d = await (await fetch(u)).json();
+    if (d.routes && d.routes[0] && d.routes[0].geometry) coords = d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+  } catch (e) { console.warn('하이라이트 경로 계산 실패, 직선으로 표시:', e); }
+  // 흰색 외곽 글로우 (대비 강화)
+  L.polyline(coords, { color: '#ffffff', weight: 18, opacity: 0.5, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(map);
+  // 본선 — 마커(노랑)·도로(주황)와 구분되는 마젠타
+  const line = L.polyline(coords, { color: '#e11d8f', weight: 8, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+  line.bindTooltip('⚠️ 통행 유의 구간', { sticky: true, direction: 'top' });
+  // 구간 양 끝 라벨
+  L.marker(coords[0], { icon: L.divIcon({ className: '', html: '<div style="background:#e11d8f;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.4);">⚠️ 통행 유의 구간</div>', iconSize:[120,22], iconAnchor:[60,28] }) }).addTo(map);
 }
 
 // ============================================================
@@ -600,7 +654,6 @@ function buildFilterChips() {
 // ============================================================
 // 상세 패널
 // ============================================================
-let panelFontSize = 15;
 let currentSpeech = null;
 let currentPoint = null;
 
@@ -645,7 +698,6 @@ function openPanel(p) {
   }
   html += `<div style="height:20px;"></div>`;
   body.innerHTML = html;
-  body.style.fontSize = panelFontSize + 'px';
   panel.classList.add('open');
 }
 
@@ -654,17 +706,15 @@ function closePanel() {
   if (currentSpeech) window.speechSynthesis.cancel();
 }
 
-// 패널 글자크기 (기존 기능 유지)
-function changePanelFont(delta) {
-  panelFontSize = Math.max(11, Math.min(24, panelFontSize + delta));
-  document.getElementById('panel-body').style.fontSize = panelFontSize + 'px';
+// 글자 크기(전역 스케일) — 헤더와 패널의 A-/A+ 모두 동일하게 작동
+let appScale = 1;
+function applyScale(dir) {
+  appScale = Math.max(0.85, Math.min(1.9, +(appScale + dir * 0.1).toFixed(2)));
+  document.documentElement.style.setProperty('--app-scale', appScale);
+  document.documentElement.style.setProperty('--font-size', (15 * appScale).toFixed(1) + 'px');
 }
-// 전역 글자크기 (헤더)
-let globalFont = 15;
-function changeGlobalFont(delta) {
-  globalFont = Math.max(12, Math.min(22, globalFont + delta));
-  document.documentElement.style.setProperty('--font-size', globalFont + 'px');
-}
+function changeGlobalFont(delta) { applyScale(delta > 0 ? 1 : -1); }
+function changePanelFont(delta)  { applyScale(delta > 0 ? 1 : -1); }
 
 function speakPanel() {
   if (!window.speechSynthesis) { alert('이 브라우저는 음성 지원이 안 됩니다.'); return; }
@@ -760,6 +810,81 @@ function useMyLocation() {
     pos => setRoutePoint('start', L.latLng(pos.coords.latitude, pos.coords.longitude), '내 위치'),
     () => setRouteHint('위치 권한이 거부되었거나 가져올 수 없습니다.')
   );
+}
+
+// ============================================================
+// 실시간 내 위치 추적
+// ============================================================
+let liveWatchId = null, meMarker = null, meCircle = null, followMe = false;
+function toggleLiveLocation() {
+  const btn = document.getElementById('locate-toggle');
+  if (!navigator.geolocation) { alert('이 브라우저는 위치 정보를 지원하지 않습니다.'); return; }
+  if (liveWatchId !== null) {   // 끄기
+    navigator.geolocation.clearWatch(liveWatchId);
+    liveWatchId = null; followMe = false;
+    btn.classList.remove('active'); btn.textContent = '📍 내 위치';
+    if (meMarker) { map.removeLayer(meMarker); meMarker = null; }
+    if (meCircle) { map.removeLayer(meCircle); meCircle = null; }
+    return;
+  }
+  // 켜기
+  btn.classList.add('active'); btn.textContent = '📡 위치 찾는 중…'; followMe = true;
+  liveWatchId = navigator.geolocation.watchPosition(updateMyLocation, geoError,
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 });
+}
+function updateMyLocation(pos) {
+  const lat = pos.coords.latitude, lng = pos.coords.longitude, acc = pos.coords.accuracy || 30;
+  const ll = [lat, lng];
+  document.getElementById('locate-toggle').textContent = '📡 추적 중';
+  if (!meMarker) {
+    meMarker = L.marker(ll, { icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [18,18], iconAnchor: [9,9] }), zIndexOffset: 1000, interactive: false }).addTo(map);
+    meCircle = L.circle(ll, { radius: acc, color: '#1a73e8', weight: 1, fillColor: '#1a73e8', fillOpacity: 0.12, interactive: false }).addTo(map);
+    map.setView(ll, Math.max(map.getZoom(), 17));
+  } else {
+    meMarker.setLatLng(ll);
+    meCircle.setLatLng(ll).setRadius(acc);
+    if (followMe) map.panTo(ll, { animate: true });
+  }
+}
+function geoError() {
+  const btn = document.getElementById('locate-toggle');
+  if (liveWatchId !== null) { navigator.geolocation.clearWatch(liveWatchId); liveWatchId = null; }
+  btn.classList.remove('active'); btn.textContent = '📍 내 위치';
+  alert('위치를 가져올 수 없습니다. 브라우저의 위치 권한을 허용했는지 확인해주세요. (HTTPS 또는 localhost에서만 동작합니다)');
+}
+// 지도를 직접 움직이면 자동 따라가기 해제(보던 위치 유지, 추적은 계속)
+map.on('dragstart', () => { if (liveWatchId !== null) followMe = false; });
+
+// ============================================================
+// 장소·주소 검색 (Nominatim 지오코딩) — 임의의 위치로 길찾기
+// ============================================================
+async function geocodeTo(which) {
+  const q = document.getElementById('geo-q').value.trim();
+  const box = document.getElementById('geo-results');
+  if (!q) { setRouteHint('검색어를 입력하세요.'); return; }
+  if (!routeMode) toggleRouteMode();
+  setRouteHint(`"${q}" 검색 중...`);
+  box.innerHTML = '';
+  try {
+    const u = `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=ko&countrycodes=kr&q=${encodeURIComponent(q)}`;
+    const arr = await (await fetch(u)).json();
+    if (!arr.length) { setRouteHint('검색 결과가 없습니다. 다른 키워드로 시도해보세요.'); return; }
+    setRouteHint(`${which === 'start' ? '🟢 출발지' : '🔴 도착지'}로 지정할 장소를 선택하세요.`);
+    arr.forEach(r => {
+      const name = r.display_name;
+      const short = name.split(',').slice(0, 2).join(', ');
+      const el = document.createElement('div');
+      el.className = 'geo-item';
+      el.innerHTML = `📍 <b>${short}</b><br><small>${name}</small>`;
+      el.onclick = () => {
+        setRoutePoint(which, L.latLng(parseFloat(r.lat), parseFloat(r.lon)), short);
+        box.innerHTML = '';
+        document.getElementById('geo-q').value = '';
+        map.setView([parseFloat(r.lat), parseFloat(r.lon)], Math.max(map.getZoom(), 15));
+      };
+      box.appendChild(el);
+    });
+  } catch (e) { setRouteHint('검색에 실패했습니다. 잠시 후 다시 시도해주세요.'); console.warn(e); }
 }
 
 function clearRoute() {
@@ -945,7 +1070,7 @@ async function submitFeedback() {
 // ============================================================
 buildFilterChips();
 renderMarkers();
-drawAlleyHighlight();
+drawHighlight();
 console.log(`✅ ${POINTS.length}개 지점 로드됨`);
 </script>
 </body>
